@@ -35,6 +35,7 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/profiles/default" "${AUTH[@]}"
 5. Use live `/v1/profiles` as authoritative. The bundled `references/polyglot.yaml` is only a static snapshot for offline orientation.
 6. Write model names as `provider/model_id`, for example `proxy_a/gpt-5.4`, `intern-regression-internal/s2_preview_20260421b`, or `openai/gpt5.5`.
 7. Submit jobs with the templates in `references/request-templates.md`, then poll `/v1/jobs/{job_id}` and `/v1/jobs/{job_id}/events`.
+8. When explaining task IDs, task sets, difficulty levels, benchmark intent, or why a harness must be selected, read `references/pipeline-and-benchmark.md` first.
 
 ## Safety Rules
 
@@ -69,6 +70,7 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/jobs/$JOB_ID/events" "${AUTH[@]}"
 ## References
 
 - `references/api.md`: endpoint map, request/response fields, online docs URLs.
+- `references/pipeline-and-benchmark.md`: agent-polyglot evaluation pipeline, task ID semantics, L1-L3 core tasks, L4 frontier tasks, and harness selection guidance.
 - `references/request-templates.md`: copyable `curl` and `jq` templates for runs, reviews, archives, batches, status, cancel, and rerun-merge.
 - `references/proxy-and-profiles.md`: how to inspect profiles, model naming, proxy boundaries, and static config caveats.
 - `references/codex-auth.md`: safe request-scoped Codex auth workflow and failure modes.
