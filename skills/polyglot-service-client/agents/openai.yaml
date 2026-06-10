@@ -1,0 +1,4 @@
+interface:
+  display_name: "Polyglot Service Client"
+  short_description: "Submit and inspect Polyglot eval jobs"
+  default_prompt: "Use $polyglot-service-client to submit a Polyglot eval run and inspect job status."
