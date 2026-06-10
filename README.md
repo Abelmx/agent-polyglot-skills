@@ -48,35 +48,37 @@ For project-scope installs, run the command from the target project directory or
 
 ## Local npx Examples
 
-Replace the `file:` path if your checkout is elsewhere. These examples use the local pipeline path format requested for this repo.
+Set `PKG_DIR` to this checkout. Replace it if your checkout is elsewhere.
 
 ```bash
+PKG_DIR=/home/maoxin/ClawsQuest/_local/agent-polyglot-skills
+
 # Inspect bundled skills.
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills list
+npx --yes "file:$PKG_DIR" list
 
 # Codex project install. Prefer cd into the target repo first.
 cd "$REPO_DIR"
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness codex --dry-run
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness codex
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex --dry-run
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex
 
 # Claude Code project install.
 cd "$REPO_DIR"
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness claude-code --project-dir "$PWD"
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness claude-code --project-dir "$PWD"
 
 # OpenClaw workspace install.
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness openclaw
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness openclaw
 ```
 
 Use `--force` only when replacing an existing installed copy:
 
 ```bash
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness codex --force
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex --force
 ```
 
 Use `--json` for scripts:
 
 ```bash
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills where --harness openclaw --json
+npx --yes "file:$PKG_DIR" where --harness openclaw --json
 ```
 
 ## Notes
@@ -137,35 +139,37 @@ project scope 安装时，请先 `cd` 到目标项目目录，或显式传入 `-
 
 ## 本地 npx 示例
 
-如果你的 checkout 路径不同，请替换 `file:` 路径。下面示例保留本仓库要求的本地 pipeline 路径格式。
+将 `PKG_DIR` 设为当前 checkout。若你的 checkout 路径不同，请替换它。
 
 ```bash
+PKG_DIR=/home/maoxin/ClawsQuest/_local/agent-polyglot-skills
+
 # 查看内置 skills。
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills list
+npx --yes "file:$PKG_DIR" list
 
 # 安装到 Codex project。建议先 cd 到目标项目。
 cd "$REPO_DIR"
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness codex --dry-run
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness codex
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex --dry-run
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex
 
 # 安装到 Claude Code project。
 cd "$REPO_DIR"
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness claude-code --project-dir "$PWD"
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness claude-code --project-dir "$PWD"
 
 # 安装到 OpenClaw workspace。
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness openclaw
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness openclaw
 ```
 
 只有在确认要替换已有安装时才使用 `--force`：
 
 ```bash
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills install polyglot-service-client --harness codex --force
+npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex --force
 ```
 
 脚本场景可使用 `--json`：
 
 ```bash
-npx --yes file:/root/ClawsQuest/_local/agent-polyglot-skills where --harness openclaw --json
+npx --yes "file:$PKG_DIR" where --harness openclaw --json
 ```
 
 ## 说明

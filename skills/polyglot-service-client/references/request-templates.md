@@ -102,7 +102,7 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-and-review" \
   }'
 ```
 
-If `review_model` uses `openai/gpt5.5` and the run should use the user's Codex quota, inject request-scoped auth without printing it:
+If `review_model` uses `openai/gpt5.5` and the review/job should use the user's Codex quota, inject request-scoped auth without printing it:
 
 ```bash
 jq -n \
