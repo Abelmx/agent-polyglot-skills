@@ -1,0 +1,423 @@
+# Polyglot 统一模型配置
+#
+# 本文件定义被测模型和 Judge 模型的端点配置。
+# API Key 等敏感信息通过 ${ENV_VAR} 语法从环境变量注入（也可写在 .env 文件中）。
+#
+# 使用方式：
+#   cp polyglot.yaml.example polyglot.yaml
+#   # 编辑 polyglot.yaml 填入实际 provider/model 信息
+#   # 在 .env 中设置对应的环境变量
+
+# ──────────────────────────────────────────────
+# Provider 定义
+# 一个 provider 对应一个 API 代理端点，可挂载多个模型
+# ──────────────────────────────────────────────
+providers:
+  proxy_a:
+    base_url: "${PROXY_A_BASE_URL}"
+    api_key: "${PROXY_A_API_KEY}"
+    api_format: openai     # openai (OpenAI Chat Completions 兼容) | anthropic
+    wire_api: chat_completions
+    supports_native_web_search: false
+    harnesses:
+      claude_code:
+        # Proxy A uses the same root for Anthropic-compatible Messages.
+        base_url: "${PROXY_A_BASE_URL}"
+        api_format: anthropic
+        wire_api: messages
+        auth_mode: api_key
+        supports_native_web_search: false
+        patch_streaming_message_start: true
+      codex:
+        # Proxy A support varies by model. Route Codex through the run-scoped
+        # runtime.codex_responses_proxy so models with Chat Completions but no
+        # native /v1/responses support still work.
+        base_url: "${PROXY_A_BASE_URL}"
+        wire_api: chat_completions
+        api_format: openai
+        supports_native_web_search: false
+        strip_encrypted_reasoning: true
+    models:
+      - id: gpt-5.4
+        name: "GPT-5.4 (A)"
+      - id: qwen3.6-plus
+        name: "Qwen 3.6 Plus (A)"
+      - id: claude-sonnet-4-6-thinking
+        name: "Claude Sonnet 4.6 Thinking (A)"
+      - id: claude-opus-4-7-thinking
+        name: "Claude Opus 4.7 Thinking (A)"
+      - id: claude-opus-4-8
+        name: "Claude Opus 4.8 (A)"
+      - id: Qwen/Qwen3.5-35B-A3B
+        name: "Qwen 3.5 35B A3B (A)"
+      - id: stepfun/step-3.5-flash
+        name: "Step 3.5 Flash (A)"
+      - id: google/gemma-4-31b-it
+        name: "Gemma 4 31B IT (A)"
+      - id: claude-haiku-4-5-20251001-thinking
+        name: "Claude Haiku 4.5 20251001 Thinking (A)"
+      - id: gemini-3-flash-preview-thinking
+        name: "Gemini 3 Flash Preview Thinking (A)"
+      - id: qwen/qwen3.6-plus:free
+        name: "Qwen 3.6 Plus Free (A)"
+      - id: qwen3.6-35b-a3b
+        name: "Qwen 3.6 35B A3B (A)"
+      # - id: gemini-3.1-pro-preview-thinking
+      #   name: "Gemini 3.1 Pro Thinking (A)"
+
+  stable_default_provider:
+    base_url: "${STABLE_DEFAULT_PROVIDER_BASE_URL}"
+    api_key: "${STABLE_DEFAULT_PROVIDER_API_KEY}"
+    api_format: openai
+    models:
+      - id: gpt-5.4
+        name: "GPT-5.4 (Stable Default)"
+
+  # proxy_b:
+  #   base_url: "${PROXY_B_BASE_URL}"
+  #   api_key: "${PROXY_B_API_KEY}"
+  #   api_format: openai
+  #   models:
+  #     - id: intern-s1-pro
+  #       name: "InternLM S1 Pro (B)"
+  #     - id: intern-s1
+  #       name: "InternLM S1 (B)"
+
+  proxy_c:
+    base_url: "${PROXY_C_BASE_URL}"
+    api_key: "${PROXY_C_API_KEY}"
+    api_format: openai
+    models:
+      - id: intern-s1-pro
+        name: "Intern S1 Pro (C)"
+
+  intern_proxy:
+    base_url: "${INTERN_PROXY_BASE_URL}"
+    api_key: "${INTERN_PROXY_API_KEY}"
+    api_format: openai
+    wire_api: chat_completions
+    supports_native_web_search: false
+    harnesses:
+      claude_code:
+        # Anthropic-compatible Claude Code endpoint for the same physical proxy.
+        # It reuses INTERN_PROXY_API_KEY below as ANTHROPIC_AUTH_TOKEN.
+        base_url: "${INTERN_PROXY_CLAUDE_BASE_URL}"
+        api_format: anthropic
+        auth_mode: auth_token
+        supports_native_web_search: false
+      codex:
+        # Intern proxy exposes OpenAI Chat Completions; Codex will use the
+        # run-scoped runtime.codex_responses_proxy to present /v1/responses.
+        wire_api: chat_completions
+        api_format: openai
+        supports_native_web_search: false
+    models:
+      - id: intern-s2-preview
+        name: "Intern S2 Preview"
+      - id: intern-s1-pro
+        name: "Intern S1 Pro"
+
+  mandao_proxy:
+    base_url: "${MANDAO_OPENAI_BASE_URL}"
+    api_key: "${MANDAO_API_KEY}"
+    api_format: openai
+    wire_api: chat_completions
+    supports_native_web_search: false
+    harnesses:
+      claude_code:
+        # Anthropic-compatible Messages endpoint for Claude Code.
+        base_url: "${MANDAO_ANTHROPIC_BASE_URL}"
+        api_format: anthropic
+        wire_api: messages
+        auth_mode: api_key
+        supports_native_web_search: false
+      codex:
+        # Mandao exposes OpenAI Chat Completions; Codex will use the
+        # run-scoped runtime.codex_responses_proxy to present /v1/responses.
+        # open-responses-server appends /v1/chat/completions to this upstream,
+        # so the codex override intentionally uses the provider root.
+        base_url: "${MANDAO_ANTHROPIC_BASE_URL}"
+        wire_api: chat_completions
+        api_format: openai
+        supports_native_web_search: false
+    models:
+      - id: gpt-5.5
+        name: "GPT-5.5 (Mandao)"
+      - id: claude-opus-4-7
+        name: "Claude Opus 4.7 (Mandao)"
+
+  intern_proxy_alias:
+    base_url: "${INTERN_PROXY_BASE_URL}"
+    api_key: "${INTERN_PROXY_API_KEY}"
+    api_format: openai
+    models:
+      - id: intern-s2-preview
+        name: "Intern S2 Preview (variance alias)"
+        alias_model_name: intern-s2-preview-variance
+
+  zhipu_glm:
+    base_url: "${GLM_BASE_URL}"
+    api_key: "${GLM_API_KEY}"
+    api_format: openai
+    wire_api: chat_completions
+    supports_native_web_search: false
+    harnesses:
+      claude_code:
+        # Official Anthropic-compatible Messages endpoint:
+        # https://api.z.ai/api/anthropic/v1/messages
+        base_url: "https://api.z.ai/api/anthropic"
+        api_format: anthropic
+        wire_api: messages
+        auth_mode: api_key
+        supports_native_web_search: false
+        patch_streaming_message_start: false
+      codex:
+        # GLM exposes Chat Completions, not /v1/responses. Codex therefore
+        # still needs runtime.codex_responses_proxy for Responses compatibility.
+        # The current proxy appends /v1/chat/completions; GLM's direct OpenAI
+        # compatible endpoint is /api/paas/v4/chat/completions.
+        base_url: "${GLM_BASE_URL}"
+        wire_api: chat_completions
+        api_format: openai
+        supports_native_web_search: false
+    models:
+      - id: glm-5
+        name: "GLM-5"
+      - id: glm-5.1
+        name: "GLM-5.1"
+
+  intern-regression-internal:
+    base_url: "http://s-20260104203038-22bhb.ailab-evalservice.pjh-service.org.cn/v1"
+    api_key: "${INTERN_REGRESSION_INTERNAL_API_KEY}"
+    api_format: openai
+    models:
+      - id: s2_preview_20260421b
+        name: "base05_20260421b"
+        alias_model_name: base05_20260421b
+      - id: s2_preview_20260421122929
+        name: "base03-20260413a-rl-data260415rc0_agenticrl-0420c"
+        alias_model_name: base03-20260413a-rl-data260415rc0_agenticrl-0420c
+      - id: s2_preview_20260420123242
+        name: "base03-20260413a-rl-data260415rc0-agenticrl-0420b"
+        alias_model_name: base03-20260413a-rl-data260415rc0-agenticrl-0420b
+      - id: s2_preview_20260415091824_1
+        name: "base03-20260413a-rl-data260415rc0"
+        alias_model_name: base03-20260413a-rl-data260415rc0
+      - id: s2_preview_20260420152056_1
+        name: "base03-20260413a-rl-data260415rc0_rlhf"
+        alias_model_name: base03-20260413a-rl-data260415rc0_rlhf
+      - id: s2_preview_20260422041959_1
+        name: "base03-20260413a-rl-data260415rc0-52k_rlhf_efficient_reasoning"
+        alias_model_name: base03-20260413a-rl-data260415rc0-52k_rlhf_efficient_reasoning
+      - id: s2_preview_20260422a
+        name: "base05_20260422a"
+        alias_model_name: base05_20260422a
+      - id: s2_preview_20260424a
+        name: "base05_20260424a"
+        alias_model_name: base05_20260424a
+      - id: s2_preview_base04_20260424a
+        name: "base04_20260424a"
+        alias_model_name: base04_20260424a
+      - id: interns2-35ba3-base03-20260420a-rl-data260422rc0-56k-badword-mtp1
+        name: "base03-20260420a-rl-data260422rc0-56k-badword-mtp1"
+        alias_model_name: base03-20260420a-rl-data260422rc0-56k-badword-mtp1
+      - id: interns2-35ba3-base04-20260420a-rl-data260415rc0-56k-resume560
+        name: "base04-20260420a-rl-data260415rc0-56k-resume560"
+        alias_model_name: base04-20260420a-rl-data260415rc0-56k-resume560
+      - id: interns2-35ba3-base04-20260420a-rl-data260422rc0-56k-badword-mtp1-resume720
+        name: "base04-20260420a-rl-data260422rc0-56k-badword-mtp1-resume720"
+        alias_model_name: base04-20260420a-rl-data260422rc0-56k-badword-mtp1-resume720
+      - id: interns2-35ba3-base03-20260413a-rl-data260415rc0-52k_rlhf_efficient_reasoning_24step_agenticrl_0420c
+        name: "base03-20260413a-rl-data260415rc0-52k_rlhf_efficient_reasoning_24step_agenticrl_0420c"
+        alias_model_name: base03-20260413a-rl-data260415rc0-52k_rlhf_efficient_reasoning_24step_agenticrl_0420c
+      - id: base03-20260420a-rl-data260422rc0-800step_rlhf_400step_efficient_reasoning_21step
+        name: "base03-20260420a-rl-data260422rc0_rlhf_efficient_reasoning"
+        alias_model_name: base03-20260420a-rl-data260422rc0_rlhf_efficient_reasoning
+      - id: zds_base04-20260420a-rl260422rc0-800step_rlhf_400step_efficient_reasoning_21step
+        name: "base04-20260420a-rl260422rc0-800step_rlhf_400step_efficient_reasoning_21step"
+        alias_model_name: base04-20260420a-rl260422rc0-800step_rlhf_400step_efficient_reasoning_21step
+      - id: base04-20260420a-rl-data260415rc0-56k_640step_rlhf_400step_efficient_reasoning_18step
+        name: "base04-20260420a-rl-data260415rc0-56k_rlhf_efficient_reasoning"
+        alias_model_name: base04-20260420a-rl-data260415rc0-56k_rlhf_efficient_reasoning
+      - id: base05-20260424a-rl-data260426rc0-56k_1280step
+        name: "base05-20260424a-rl-data260426rc0-56k_1280step"
+        alias_model_name: base05-20260424a-rl-data260426rc0-56k_1280step
+      - id: base05-20260424a-rl-data260426rc1-56k_1120step
+        name: "base05-20260424a-rl-data260426rc1-56k_1120step"
+        alias_model_name: base05-20260424a-rl-data260426rc1-56k_1120step
+      - id: zds_base04-20260420a-rl260422rc0-800step_agenticrl_0420c_adjust_ratio_20step
+        name: "base04-20260420a-rl-data260422rc0-800step_agenticrl_0420c_adjust_ratio_20step"
+        alias_model_name: base04-20260420a-rl-data260422rc0-800step_agenticrl_0420c_adjust_ratio_20step
+      - id: zds_base03-20260420a-rl-data260422rc0-800step_agenticrl_0420c_adjust_ratio_no_filter_20step
+        name: "base03-20260420a-rl-data260422rc0-56k-800step_agenticrl_0420c_adjust_ratio_no_filter_20step"
+        alias_model_name: base03-20260420a-rl-data260422rc0-56k-800step_agenticrl_0420c_adjust_ratio_no_filter_20step
+      - id: zds_base03-20260420a-rl-data260422rc0-800step_rlhf_400step_efficient_reasoning_21step_agenticrl_0420c_adjust_ratio_no_filter_20step
+        name: "base03-20260420a-rl-data260422rc0-56k-800step_rlhf_400step_efficient_reasoning_21step_agenticrl_0420c_adjust_ratio_no_filter_20step"
+        alias_model_name: base03-20260420a-rl-data260422rc0-56k-800step_rlhf_400step_efficient_reasoning_21step_agenticrl_0420c_adjust_ratio_no_filter_20step
+      - id: zds_base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_science_mtp4_0429a_10step
+        name: "base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_science_mtp4_0429a_10step"
+        alias_model_name: base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_science_mtp4_0429a_10step
+      - id: zds_base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_mtp4_0429a_10step
+        name: "base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_mtp4_0429a_10step"
+        alias_model_name: base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_mtp4_0429a_10step
+      - id: zds_base05-20260424a-rl-data260426rc0-56k_1280step_agenticrl_mtp4_0428b_10step
+        name: "base05-20260424a-rl-data260426rc0-56k_1280step_agenticrl_mtp4_0428b_10step"
+        alias_model_name: base05-20260424a-rl-data260426rc0-56k_1280step_agenticrl_mtp4_0428b_10step
+      - id: zds_base04-20260420a-rl260422rc0-800step_agenticrl_mtp1_0428a_10step
+        name: "base04-20260420a-rl260422rc0-800step_agenticrl_mtp1_0428a_10step"
+        alias_model_name: base04-20260420a-rl260422rc0-800step_agenticrl_mtp1_0428a_10step
+      - id: zds_base05-20260424a-rl-data260428rc0-56k_1120step
+        name: "base05-20260424a-rl-data260428rc0-56k_1120step"
+        alias_model_name: base05-20260424a-rl-data260428rc0-56k_1120step
+      - id: base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_mtp4_0429a_20step
+        name: "base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_mtp4_0429a_20step"
+        alias_model_name: base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_mtp4_0429a_20step
+      - id: base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_science_mtp4_0429a_20step
+        name: "base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_science_mtp4_0429a_20step"
+        alias_model_name: base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_science_mtp4_0429a_20step
+      - id: zds_base05-20260424a-rl-data260426rc0-56k_1280step_rlhf_0429rc2_50step
+        name: "base05-20260424a-rl-data260426rc0-56k_1280step_rlhf_0429rc2_50step"
+        alias_model_name: base05-20260424a-rl-data260426rc0-56k_1280step_rlhf_0429rc2_50step
+      - id: zds_base05-20260424a-rl-data260426rc1-56k_1280step_rlhf_0429rc2_50step
+        name: "base05-20260424a-rl-data260426rc1-56k_1280step_rlhf_0429rc2_50step"
+        alias_model_name: base05-20260424a-rl-data260426rc1-56k_1280step_rlhf_0429rc2_50step
+      - id: base05-20260424a-rl-data260428rc0-56k_1120step_rlhf_55step
+        name: "base05-20260424a-rl-data260428rc0-56k_1120step_rlhf_55step"
+      - id: interns2-35ba3-base05-20260424a-rl-data260426rc1-56k-length-reweight_1760step
+        name: "interns2-35ba3-base05-20260424a-rl-data260426rc1-56k-length-reweight_1760step"
+      - id: base04-20260424a-rl-data260428rc0-56k_1440step
+        name: "base04-20260424a-rl-data260428rc0-56k_1440step"
+      - id: base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_mtp4_0429a_30step
+        name: "base05-20260424a-rl-data260426rc1-56k_1120step_agenticrl_mtp4_0429a_30step"
+      - id: base05-20260424a-rl-data260428rc0-56k_1120step_agenticrl_mtp4_0501a_30step
+        name: "base05-20260424a-rl-data260428rc0-56k_1120step_agenticrl_mtp4_0501a_30step"
+      - id: base05-20260424a-rl-data260428rc0-56k_1120step_agenticrl_science_mtp4_0501b_10step
+        name: "base05-20260424a-rl-data260428rc0-56k_1120step_agenticrl_science_mtp4_0501b_10step"
+  moonshot_kimi:
+    base_url: "${KIMI_BASE_URL}"
+    api_key: "${MOONSHOT_KIMI_MODEL_API_KEY}"
+    api_format: openai
+    wire_api: chat_completions
+    supports_native_web_search: false
+    harnesses:
+      claude_code:
+        # Official Anthropic-compatible Messages endpoint:
+        # https://api.moonshot.cn/anthropic/v1/messages
+        base_url: "https://api.moonshot.cn/anthropic"
+        api_format: anthropic
+        wire_api: messages
+        auth_mode: api_key
+        supports_native_web_search: false
+        patch_streaming_message_start: false
+      codex:
+        # KIMI_BASE_URL already includes /v1, while runtime.codex_responses_proxy
+        # appends /v1/chat/completions to the upstream base.
+        base_url: "https://api.moonshot.cn"
+        wire_api: chat_completions
+        api_format: openai
+        supports_native_web_search: false
+    models:
+      - id: kimi-k2.6
+        name: "Kimi K2.6"
+
+  intern_lmdploy_proxy:
+    base_url: "${INTERN_LMDEPLOY_PROXY_BASE_URL}"
+    api_key: "${INTERN_LMDEPLOY_PROXY_API_KEY}"
+    api_format: openai
+    models:
+      - id: intern_s2
+        name: "Intern S2 Preivew"
+
+# ──────────────────────────────────────────────
+# 运行参数（非敏感，统一放在 YAML 中）
+# ──────────────────────────────────────────────
+runtime:
+  output_dir: ./output
+  workspace_base: ~/.polyglot/workspaces
+  task_timeout_seconds: 1440
+  grader_timeout_seconds: 120
+  openclaw_timeout_seconds: 1200
+  openclaw_llm_idle_timeout_seconds: 1200
+  openclaw_rerun_attempts: 3
+  max_tool_calls: 400
+  log_level: INFO
+  claude_code_cli_path: ./node_modules/.bin/claude
+  claude_code_cli_version: "2.1.144"
+  codex_cli_path: ./node_modules/.bin/codex
+  codex_cli_version: "0.131.0"
+  codex_responses_proxy:
+    enabled: true
+    command: _local/open-responses-server/.venv/bin/otc
+    args:
+      - start
+    startup_timeout_seconds: 30
+    stream_timeout_seconds: 600
+    supports_native_web_search: false
+    log_level: INFO
+  web_access:
+    enabled: true
+    mode: live
+    native_search_enabled: false
+    allow_domains:
+      - "*"
+    allow_local_binding: true
+    fail_fast: true
+    github_token_env_var: POLYGLOT_GITHUB_TOKEN
+  web_mcp:
+    enabled: true
+    provider: tavily
+    server_name: tavily
+    transport: stdio
+    command: ./node_modules/.bin/tavily-mcp
+    env:
+      TAVILY_API_KEY: "${TAVILY_API_KEY}"
+    required: true
+    startup_timeout_seconds: 20
+    tool_timeout_seconds: 60
+    # Empty means expose all tools provided by this MCP server to both
+    # Claude Code and Codex.
+    enabled_tools: []
+
+# ──────────────────────────────────────────────
+# Subagent 默认配置
+# 作为所有 task-level agent_runtime.defaults_patch 的低优先级默认值
+# ──────────────────────────────────────────────
+subagent:
+  defaults_patch:
+    subagents:
+      # Model is injected from the active model-under-test by the OpenClaw
+      # config generator. Task-level agent_runtime defaults may still override.
+      # thinking: low
+      maxSpawnDepth: 2
+
+# ──────────────────────────────────────────────
+# 被测模型 (Model Under Test)
+# 通过 OpenClaw agent 执行评测任务
+# ──────────────────────────────────────────────
+model:
+  provider: openai
+  model_id: gpt5.5-xhigh
+  # 可选采样参数，不设置则使用 provider 默认值
+  # temperature: 0.0
+  # top_p: 1.0
+  # max_tokens: 8192
+  # extra_body:
+  #   spaces_between_special_tokens: false
+
+# ──────────────────────────────────────────────
+# Judge 模型
+# 支持多个 judge 模型交叉投票，减少单模型 bias
+# ──────────────────────────────────────────────
+judge:
+  votes_per_model: 3           # 每个 judge 模型投几票
+  variance_threshold: 0.2      # 方差超过此阈值时追加投票
+  # 共享的采样参数（各 judge 模型统一使用）
+  params:
+    temperature: 0.2
+    max_tokens: 32949
+  # judge 模型列表，可来自同一个或不同的 provider
+  models:
+    - provider: stable_default_provider
+      model_id: gpt-5.4
+    # - provider: proxy_a
+    #   model_id: claude-sonnet-4-6-thinking

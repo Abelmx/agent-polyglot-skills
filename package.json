@@ -1,0 +1,21 @@
+{
+  "name": "agent-polyglot-skills",
+  "version": "0.1.0",
+  "description": "Installer for Polyglot eval-service agent skills.",
+  "license": "UNLICENSED",
+  "bin": {
+    "agent-polyglot-skills": "bin/agent-polyglot-skills.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "skills/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node bin/agent-polyglot-skills.js list && node bin/agent-polyglot-skills.js where --harness codex --json >/dev/null"
+  }
+}
