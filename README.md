@@ -1,179 +1,175 @@
 # Agent Polyglot Skills
 
-`agent-polyglot-skills` is a local `npx` installer for agent skills that help Codex, Claude Code, and OpenClaw use the Polyglot eval service.
+`agent-polyglot-skills` is a skills collection for the `agent-polyglot` cross-harness evaluation pipeline. It provides domain-specific agent skills for working with Polyglot evaluation services, archives, reviews, and run metadata across Codex, Claude Code, and OpenClaw.
 
-The first bundled skill is `polyglot-service-client`. It is specific to the Polyglot evaluation service: service auth, profiles, run submission, reviews, eval_vis archives, and request-scoped `codex_auth`. It is not a general-purpose skill and is not recommended for user/admin-level installs unless you intentionally want every session to see this Polyglot-specific workflow.
+This repository is not meant to be a general-purpose skill library. The skills are for evaluating LLM/vLLM systems through `agent-polyglot`, so project-level installation is usually the right choice. User-level installation is supported, but it makes this Polyglot-specific workflow visible in unrelated sessions.
 
-## Commands
+## Included Skills
+
+- `polyglot-service-client`: call the lightweight Polyglot evaluation service, discover profiles/proxies/models, submit runs and reviews, archive to eval_vis, and pass request-scoped `codex_auth` safely.
+
+## Install With npx
+
+Use the npm-hosted package directly. You do not need to clone this repository for normal use.
+
+Project-level install is recommended:
 
 ```bash
-agent-polyglot-skills list
-agent-polyglot-skills where --harness codex
-agent-polyglot-skills install polyglot-service-client --harness codex --dry-run
+REPO_DIR=/path/to/your/eval-or-agent-polyglot-project
+
+npx --yes agent-polyglot-skills install polyglot-service-client --harness codex --project-dir "$REPO_DIR"
+npx --yes agent-polyglot-skills install polyglot-service-client --harness claude-code --project-dir "$REPO_DIR"
+npx --yes agent-polyglot-skills install polyglot-service-client --harness openclaw --project-dir "$REPO_DIR"
 ```
 
-Supported harnesses:
-
-- `codex`
-- `claude-code`
-- `openclaw`
-
-Supported options:
-
-- `--scope project|workspace|user`
-- `--project-dir <dir>`
-- `--force`
-- `--dry-run`
-- `--json`
-
-## Install Targets
-
-Default scopes:
-
-- Codex: project scope
-- Claude Code: project scope
-- OpenClaw: workspace scope
-
-Resolved targets:
-
-- Codex project: `<project-dir>/.agents/skills/polyglot-service-client`
-- Codex user: `${CODEX_HOME:-~/.codex}/skills/polyglot-service-client`
-- Claude Code project: `<project-dir>/.claude/skills/polyglot-service-client`
-- Claude Code user: `~/.claude/skills/polyglot-service-client`
-- OpenClaw project: `<project-dir>/skills/polyglot-service-client`
-- OpenClaw workspace: `$(openclaw skills list --json).workspaceDir/skills/polyglot-service-client`; fallback `${OPENCLAW_STATE_DIR:-~/.openclaw}/workspace/skills/polyglot-service-client`
-- OpenClaw user/shared: `${OPENCLAW_STATE_DIR:-~/.openclaw}/skills/polyglot-service-client`
-
-For project-scope installs, run the command from the target project directory or pass `--project-dir`. If `--project-dir` is omitted for project scope, the installer uses the current working directory.
-
-## Local npx Examples
-
-Set `PKG_DIR` to this checkout. Replace it if your checkout is elsewhere.
+If `--project-dir` is omitted, the installer defaults to user/shared scope:
 
 ```bash
-PKG_DIR=/home/maoxin/ClawsQuest/_local/agent-polyglot-skills
+npx --yes agent-polyglot-skills install polyglot-service-client --harness codex
+npx --yes agent-polyglot-skills install polyglot-service-client --harness claude-code
+npx --yes agent-polyglot-skills install polyglot-service-client --harness openclaw
+```
 
-# Inspect bundled skills.
-npx --yes "file:$PKG_DIR" list
+Inspect available skills and resolved targets before installing:
 
-# Codex project install. Prefer cd into the target repo first.
-cd "$REPO_DIR"
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex --dry-run
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex
-
-# Claude Code project install.
-cd "$REPO_DIR"
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness claude-code --project-dir "$PWD"
-
-# OpenClaw workspace install.
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness openclaw
+```bash
+npx --yes agent-polyglot-skills list
+npx --yes agent-polyglot-skills where polyglot-service-client --harness codex --project-dir "$REPO_DIR"
+npx --yes agent-polyglot-skills where polyglot-service-client --harness openclaw --json
 ```
 
 Use `--force` only when replacing an existing installed copy:
 
 ```bash
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex --force
+npx --yes agent-polyglot-skills install polyglot-service-client --harness codex --project-dir "$REPO_DIR" --force
 ```
 
-Use `--json` for scripts:
+## Install Targets
+
+When `--project-dir` is set:
+
+- Codex: `<project-dir>/.agents/skills/polyglot-service-client`
+- Claude Code: `<project-dir>/.claude/skills/polyglot-service-client`
+- OpenClaw: `<project-dir>/skills/polyglot-service-client`
+
+When `--project-dir` is omitted:
+
+- Codex: `${CODEX_HOME:-~/.codex}/skills/polyglot-service-client`
+- Claude Code: `~/.claude/skills/polyglot-service-client`
+- OpenClaw: `${OPENCLAW_STATE_DIR:-~/.openclaw}/skills/polyglot-service-client`
+
+Advanced OpenClaw workspace install is still available when that is the intended target:
 
 ```bash
-npx --yes "file:$PKG_DIR" where --harness openclaw --json
+npx --yes agent-polyglot-skills install polyglot-service-client --harness openclaw --scope workspace
 ```
 
-## Notes
+## Runtime Configuration
 
-The installer refuses to overwrite an existing target unless `--force` is set. It also fails if the bundled source skill directory is missing.
+The skill does not contain service credentials. Sessions using `polyglot-service-client` should configure:
 
-Project/workspace installs are preferred. User/shared installs are supported for maintainers, but they make this Polyglot eval-service-specific workflow visible outside the intended project context.
+```bash
+export POLYGLOT_SERVICE_BASE_URL="http://<service-host>:<port>"
+export POLYGLOT_SERVICE_API_KEY="<ask-service-provider>"
+```
+
+For official OpenAI/Codex quota flows, pass `codex_auth` per request. The service treats this auth as run/review-level material and does not store it as server configuration.
+
+## Maintainer Notes
+
+For local development before npm publishing:
+
+```bash
+npx --yes file:/home/maoxin/ClawsQuest/_local/agent-polyglot-skills list
+```
+
+The package currently exposes a small installer entrypoint so `npx` can copy bundled skill folders into each harness' native skill location. The product surface is the skill collection; the installer is only distribution plumbing.
 
 ---
 
 # Agent Polyglot Skills（中文）
 
-`agent-polyglot-skills` 是一个本地 `npx` 安装器，用来把面向 Polyglot 评测服务的 agent skills 安装到 Codex、Claude Code 和 OpenClaw 的本地 skill 目录。
+`agent-polyglot-skills` 是面向 `agent-polyglot` 跨 harness 评测管线的 skills collection。它提供一组领域专用 agent skills，用于在 Codex、Claude Code 和 OpenClaw 中调用 Polyglot 评测服务、处理归档、review 和 run metadata。
 
-当前内置的第一个 skill 是 `polyglot-service-client`。它只面向 Polyglot eval service：服务鉴权、profiles 查询、提交 run、review、eval_vis archive，以及 request-scoped `codex_auth`。它不是通用 skill，不建议安装到 user/admin 级别，除非你明确希望所有会话都看到这套 Polyglot 专用流程。
+这个仓库不是通用 skill 库。这里的 skills 主要服务于通过 `agent-polyglot` 评测 LLM/vLLM 的工作流，因此通常推荐安装到项目级别。user 级别安装也支持，但会让这套 Polyglot 专用流程出现在无关会话中。
 
-## 命令
+## 当前包含的 Skills
+
+- `polyglot-service-client`：调用轻量 Polyglot 评测服务，查询 profiles/proxies/models，提交 run 和 review，归档到 eval_vis，并安全传递 request-scoped `codex_auth`。
+
+## 使用 npx 安装
+
+正常使用时直接使用 npm 托管的包，不需要先 clone 这个仓库。
+
+推荐安装到项目级别：
 
 ```bash
-agent-polyglot-skills list
-agent-polyglot-skills where --harness codex
-agent-polyglot-skills install polyglot-service-client --harness codex --dry-run
+REPO_DIR=/path/to/your/eval-or-agent-polyglot-project
+
+npx --yes agent-polyglot-skills install polyglot-service-client --harness codex --project-dir "$REPO_DIR"
+npx --yes agent-polyglot-skills install polyglot-service-client --harness claude-code --project-dir "$REPO_DIR"
+npx --yes agent-polyglot-skills install polyglot-service-client --harness openclaw --project-dir "$REPO_DIR"
 ```
 
-支持的 harness：
-
-- `codex`
-- `claude-code`
-- `openclaw`
-
-支持的选项：
-
-- `--scope project|workspace|user`
-- `--project-dir <dir>`
-- `--force`
-- `--dry-run`
-- `--json`
-
-## 安装目标
-
-默认 scope：
-
-- Codex：project scope
-- Claude Code：project scope
-- OpenClaw：workspace scope
-
-目标目录：
-
-- Codex project：`<project-dir>/.agents/skills/polyglot-service-client`
-- Codex user：`${CODEX_HOME:-~/.codex}/skills/polyglot-service-client`
-- Claude Code project：`<project-dir>/.claude/skills/polyglot-service-client`
-- Claude Code user：`~/.claude/skills/polyglot-service-client`
-- OpenClaw project：`<project-dir>/skills/polyglot-service-client`
-- OpenClaw workspace：`$(openclaw skills list --json).workspaceDir/skills/polyglot-service-client`；fallback `${OPENCLAW_STATE_DIR:-~/.openclaw}/workspace/skills/polyglot-service-client`
-- OpenClaw user/shared：`${OPENCLAW_STATE_DIR:-~/.openclaw}/skills/polyglot-service-client`
-
-project scope 安装时，请先 `cd` 到目标项目目录，或显式传入 `--project-dir`。如果 project scope 没有提供 `--project-dir`，安装器会使用当前工作目录。
-
-## 本地 npx 示例
-
-将 `PKG_DIR` 设为当前 checkout。若你的 checkout 路径不同，请替换它。
+如果省略 `--project-dir`，安装器默认使用 user/shared scope：
 
 ```bash
-PKG_DIR=/home/maoxin/ClawsQuest/_local/agent-polyglot-skills
+npx --yes agent-polyglot-skills install polyglot-service-client --harness codex
+npx --yes agent-polyglot-skills install polyglot-service-client --harness claude-code
+npx --yes agent-polyglot-skills install polyglot-service-client --harness openclaw
+```
 
-# 查看内置 skills。
-npx --yes "file:$PKG_DIR" list
+安装前可查看可用 skills 和目标路径：
 
-# 安装到 Codex project。建议先 cd 到目标项目。
-cd "$REPO_DIR"
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex --dry-run
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex
-
-# 安装到 Claude Code project。
-cd "$REPO_DIR"
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness claude-code --project-dir "$PWD"
-
-# 安装到 OpenClaw workspace。
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness openclaw
+```bash
+npx --yes agent-polyglot-skills list
+npx --yes agent-polyglot-skills where polyglot-service-client --harness codex --project-dir "$REPO_DIR"
+npx --yes agent-polyglot-skills where polyglot-service-client --harness openclaw --json
 ```
 
 只有在确认要替换已有安装时才使用 `--force`：
 
 ```bash
-npx --yes "file:$PKG_DIR" install polyglot-service-client --harness codex --force
+npx --yes agent-polyglot-skills install polyglot-service-client --harness codex --project-dir "$REPO_DIR" --force
 ```
 
-脚本场景可使用 `--json`：
+## 安装目标
+
+设置 `--project-dir` 时：
+
+- Codex：`<project-dir>/.agents/skills/polyglot-service-client`
+- Claude Code：`<project-dir>/.claude/skills/polyglot-service-client`
+- OpenClaw：`<project-dir>/skills/polyglot-service-client`
+
+省略 `--project-dir` 时：
+
+- Codex：`${CODEX_HOME:-~/.codex}/skills/polyglot-service-client`
+- Claude Code：`~/.claude/skills/polyglot-service-client`
+- OpenClaw：`${OPENCLAW_STATE_DIR:-~/.openclaw}/skills/polyglot-service-client`
+
+如果确实需要 OpenClaw workspace 级别安装，也可以显式指定：
 
 ```bash
-npx --yes "file:$PKG_DIR" where --harness openclaw --json
+npx --yes agent-polyglot-skills install polyglot-service-client --harness openclaw --scope workspace
 ```
 
-## 说明
+## 运行时配置
 
-如果目标目录已经存在，安装器会拒绝覆盖，除非设置 `--force`。如果内置 source skill 目录不存在，安装器也会失败。
+skill 不包含服务凭据。使用 `polyglot-service-client` 的 session 应配置：
 
-优先使用 project/workspace 安装。user/shared 安装只建议维护者使用，因为它会让这套 Polyglot eval-service 专用流程出现在目标项目之外。
+```bash
+export POLYGLOT_SERVICE_BASE_URL="http://<service-host>:<port>"
+export POLYGLOT_SERVICE_API_KEY="<ask-service-provider>"
+```
+
+如果使用官方 OpenAI/Codex 配额，请在请求级别传入 `codex_auth`。服务会把这个 auth 作为 run/review-level material 使用，不会将其保存为服务器配置。
+
+## 维护者说明
+
+npm 发布前的本地开发可使用：
+
+```bash
+npx --yes file:/home/maoxin/ClawsQuest/_local/agent-polyglot-skills list
+```
+
+当前 package 暴露了一个很小的 installer entrypoint，方便 `npx` 将内置 skill 文件夹复制到不同 harness 的原生 skill 目录。真正的产品面是 skills collection，installer 只是分发机制。

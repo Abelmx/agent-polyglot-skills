@@ -1,7 +1,7 @@
 {
   "name": "agent-polyglot-skills",
   "version": "0.1.0",
-  "description": "Installer for Polyglot eval-service agent skills.",
+  "description": "Agent skill collection for agent-polyglot cross-harness evaluation workflows.",
   "license": "UNLICENSED",
   "bin": {
     "agent-polyglot-skills": "bin/agent-polyglot-skills.js"
@@ -15,7 +15,15 @@
   "engines": {
     "node": ">=18"
   },
+  "keywords": [
+    "agent-polyglot",
+    "agent-skills",
+    "codex",
+    "claude-code",
+    "openclaw",
+    "evaluation"
+  ],
   "scripts": {
-    "check": "node bin/agent-polyglot-skills.js list && node bin/agent-polyglot-skills.js where --harness codex --json >/dev/null"
+    "check": "node bin/agent-polyglot-skills.js list && node bin/agent-polyglot-skills.js where --harness codex --json >/dev/null && node bin/agent-polyglot-skills.js where --harness codex --project-dir /tmp/agent-polyglot-skills-check --json >/dev/null"
   }
 }
