@@ -1,6 +1,6 @@
 {
   "name": "agent-polyglot-skills",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Agent skill collection for agent-polyglot cross-harness evaluation workflows.",
   "license": "UNLICENSED",
   "bin": {

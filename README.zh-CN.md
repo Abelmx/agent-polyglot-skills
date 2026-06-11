@@ -35,9 +35,18 @@ npx --yes agent-polyglot-skills install polyglot-service-client --harness opencl
 安装前可查看可用 skills 和目标路径：
 
 ```bash
+npx --yes agent-polyglot-skills --version
 npx --yes agent-polyglot-skills list
 npx --yes agent-polyglot-skills where polyglot-service-client --harness codex --project-dir "$REPO_DIR"
 npx --yes agent-polyglot-skills where polyglot-service-client --harness openclaw --json
+```
+
+项目级安装后，可以检查正在使用的 harness 目标路径是否存在：
+
+```bash
+test -d "$REPO_DIR/.agents/skills/polyglot-service-client"   # Codex
+test -d "$REPO_DIR/.claude/skills/polyglot-service-client"   # Claude Code
+test -d "$REPO_DIR/skills/polyglot-service-client"           # OpenClaw
 ```
 
 只有在确认要替换已有安装时才使用 `--force`：

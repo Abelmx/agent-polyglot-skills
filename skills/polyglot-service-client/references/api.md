@@ -39,11 +39,15 @@ Do not print auth headers or use verbose curl output.
 | `POST` | `/v1/run-and-review` | Run eval, then review it in one job. |
 | `POST` | `/v1/run-and-review/batch` | Submit multiple run-and-review jobs. |
 | `POST` | `/v1/archives/eval-vis` | Archive an existing run for eval_vis. |
+| `POST` | `/v1/archives/eval-vis/delete` | Dry-run or delete archived and prepared eval_vis run data. |
 | `POST` | `/v1/run-review-archive` | Run eval, review it, then archive for eval_vis. |
+| `POST` | `/v1/run-review-archive/batch` | Submit multiple run-review-archive jobs in one batch. |
 | `POST` | `/v1/rerun-merge` | Plan or submit a rerun merge for selected failed/retryable tasks. |
+| `GET` | `/v1/jobs` | List jobs with filters, pagination, and queue capacity metadata. |
 | `GET` | `/v1/jobs/{job_id}` | Fetch job status and paths. |
 | `GET` | `/v1/jobs/{job_id}/events` | Fetch job events; optional `after_id`. |
 | `POST` | `/v1/jobs/{job_id}/cancel` | Cancel queued/running job. |
+| `POST` | `/v1/jobs/cancel/batch` | Cancel multiple jobs with per-job results. |
 | `GET` | `/v1/runs/status` | Summarize an existing run directory via `run_dir`. |
 
 ## Common Request Fields
@@ -87,6 +91,20 @@ Archive fields:
 - `eval_version` or `run_name`: at least one is required.
 - `replace_existing`, `prepare`, `label`, `note`, `tags`, `archive_root`, `eval_vis_dir`, `difficulties`: optional archive controls.
 
+Archive delete fields:
+
+- Preferred selector: `source_job_id` from a successful `eval_vis_archive` or `run_review_archive` job.
+- Direct fallback selectors: `archive_dir` and/or `prepared_data_dir`; these paths must be visible to the service host and under the configured allowed roots.
+- Controls: `delete_archive`, `delete_prepared`, `dry_run`, `prune_empty_parents`, `archive_root`, and `eval_vis_dir`.
+- Prefer `dry_run: true` first. Delete only removes archived/prepared eval_vis data; it does not rerun benchmarks.
+
+Job list query fields:
+
+- Repeatable filters: `status` and `type`.
+- Exact filters: `batch_id`, `harness`, and `model`.
+- Pagination: `limit` defaults to `50` and is capped at `500`; `offset` defaults to `0`; `order` is `desc` or `asc`.
+- Capacity metadata: `max_active_jobs`, `active_jobs`, `queue_depth`, and `available_slots`.
+
 ## Response Fields
 
 Submit endpoints return:
@@ -102,6 +120,13 @@ Batch endpoints return:
 - `status`
 - `jobs`
 
+Batch idempotency behavior:
+
+- Each batch item may set its own `idempotency_key`.
+- Retrying the same fully idempotent batch returns the original jobs and original `batch_id`.
+- A batch request that mixes already-existing idempotent items with new items returns `409`; retry the original batch exactly or submit only the new jobs separately.
+- If item idempotency keys resolve to jobs from multiple old batches, the service returns `409`.
+
 Job status returns:
 
 - identity: `job_id`, `display_name`, `batch_id`, `type`, `status`, `phase`
@@ -111,6 +136,10 @@ Job status returns:
 - diagnostics/timestamps: `error`, `created_at`, `started_at`, `finished_at`, `updated_at`
 
 `run-review-archive` success should expose `archive_dir` for the archived run and `prepared_data_dir` for eval_vis frontend consumption.
+
+Job list returns the same job summary shape for each listed job plus `total`, `limit`, `offset`, `queue_depth`, `active_jobs`, `max_active_jobs`, and `available_slots`.
+
+Batch cancel returns `requested`, `canceled`, `already_terminal`, `not_found`, and `items`. Cancellation is per job; terminal jobs are reported as no-ops when `ignore_terminal` is `true`.
 
 Status values: `queued`, `running`, `succeeded`, `failed`, `cancel_requested`, `canceled`.
 

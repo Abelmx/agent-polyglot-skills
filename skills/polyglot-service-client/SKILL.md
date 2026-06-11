@@ -34,8 +34,10 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/profiles/default" "${AUTH[@]}"
 
 5. Use live `/v1/profiles` as authoritative. The bundled `references/polyglot.yaml` is only a static snapshot for offline orientation.
 6. Write model names as `provider/model_id`, for example `proxy_a/gpt-5.4`, `intern-regression-internal/s2_preview_20260421b`, or `openai/gpt5.5`.
-7. Submit jobs with the templates in `references/request-templates.md`, then poll `/v1/jobs/{job_id}` and `/v1/jobs/{job_id}/events`.
-8. When explaining task IDs, task sets, difficulty levels, benchmark intent, or why a harness must be selected, read `references/pipeline-and-benchmark.md` first.
+7. Call `/v1/jobs` before large batches, after a dropped connection or empty reply before retrying, when cleaning up L4 full-run smoke tests, and when checking whether a batch still has active children. Compare `available_slots`, `queue_depth`, and intended job count.
+8. Submit jobs with the templates in `references/request-templates.md`, then poll `/v1/jobs/{job_id}` and `/v1/jobs/{job_id}/events`.
+9. Use `/v1/jobs/cancel/batch` for batch cleanup, and run `/v1/archives/eval-vis/delete` with `dry_run: true` before deleting archived or prepared eval_vis data.
+10. When explaining task IDs, task sets, difficulty levels, benchmark intent, or why a harness must be selected, read `references/pipeline-and-benchmark.md` first.
 
 ## Safety Rules
 

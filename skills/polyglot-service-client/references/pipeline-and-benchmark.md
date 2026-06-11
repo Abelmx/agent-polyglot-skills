@@ -60,6 +60,8 @@ Task IDs follow the shape `<axis><level>-<sequence>`, for example:
 - `D3-07`: axis D, level L3, sequence 07
 - `A4-03`: axis A, level L4, sequence 03
 
+`A1-01` is a task ID, not a difficulty filter. To list that family through the service, use `difficulty=L1` and `category=A`.
+
 The benchmark uses seven capability axes:
 
 | Axis | Focus |

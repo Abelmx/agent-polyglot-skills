@@ -40,6 +40,7 @@ jq -n \
   }' | curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/runs" \
     -H "Authorization: Bearer $POLYGLOT_SERVICE_API_KEY" \
     -H "Content-Type: application/json" \
+    -H 'Expect:' \
     -d @-
 ```
 
@@ -49,9 +50,9 @@ For combined requests, place `codex_auth` at the top level:
 jq -n \
   --slurpfile auth "$HOME/.codex/auth.json" \
   '{
-    display_name: "run-review-archive-user-quota",
+    display_name: "run-review-archive-frontier-user-quota",
     run: {
-      tasks: ["A1-01"],
+      tasks: ["A4-04"],
       model: "openai/gpt5.5",
       harness: "codex",
       parallel: 1
@@ -65,7 +66,7 @@ jq -n \
     archive: {
       tier: "frontier",
       polyglot_version: "polyglot-0.4.0",
-      eval_version: "user-quota-eval",
+      eval_version: "frontier-user-quota-a4-04",
       replace_existing: false,
       prepare: true
     },
@@ -76,10 +77,11 @@ jq -n \
   }' | curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-review-archive" \
     -H "Authorization: Bearer $POLYGLOT_SERVICE_API_KEY" \
     -H "Content-Type: application/json" \
+    -H 'Expect:' \
     -d @-
 ```
 
-Do not duplicate `codex_auth` in nested `run` and `review` objects unless there is a service-specific reason.
+Do not duplicate `codex_auth` in nested `run` and `review` objects unless there is a service-specific reason. For batch combined requests, place `codex_auth` at the top level of each item that needs user quota.
 
 ## Supported Modes
 

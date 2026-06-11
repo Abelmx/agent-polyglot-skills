@@ -35,9 +35,18 @@ npx --yes agent-polyglot-skills install polyglot-service-client --harness opencl
 Inspect available skills and resolved targets before installing:
 
 ```bash
+npx --yes agent-polyglot-skills --version
 npx --yes agent-polyglot-skills list
 npx --yes agent-polyglot-skills where polyglot-service-client --harness codex --project-dir "$REPO_DIR"
 npx --yes agent-polyglot-skills where polyglot-service-client --harness openclaw --json
+```
+
+After a project-level install, check the installed path for each harness you use:
+
+```bash
+test -d "$REPO_DIR/.agents/skills/polyglot-service-client"   # Codex
+test -d "$REPO_DIR/.claude/skills/polyglot-service-client"   # Claude Code
+test -d "$REPO_DIR/skills/polyglot-service-client"           # OpenClaw
 ```
 
 Use `--force` only when replacing an existing installed copy:
