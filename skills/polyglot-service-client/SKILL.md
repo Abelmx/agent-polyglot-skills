@@ -17,6 +17,7 @@ Use this skill to call the Polyglot lightweight eval service safely.
 : "${POLYGLOT_SERVICE_API_KEY:?set POLYGLOT_SERVICE_API_KEY}"
 AUTH=(-H "Authorization: Bearer $POLYGLOT_SERVICE_API_KEY")
 JSON=(-H "Content-Type: application/json")
+NO_EXPECT=(-H "Expect:")
 ```
 
 3. Check service health before submissions:
@@ -51,7 +52,7 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/profiles/default" "${AUTH[@]}"
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/runs" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d '{
     "display_name": "smoke-openclaw-a1",
     "tasks": ["A1-01"],

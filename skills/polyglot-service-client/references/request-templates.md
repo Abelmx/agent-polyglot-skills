@@ -12,6 +12,7 @@ export POLYGLOT_SERVICE_API_KEY="ask-service-provider"
 : "${POLYGLOT_SERVICE_API_KEY:?set POLYGLOT_SERVICE_API_KEY}"
 AUTH=(-H "Authorization: Bearer $POLYGLOT_SERVICE_API_KEY")
 JSON=(-H "Content-Type: application/json")
+NO_EXPECT=(-H "Expect:")
 ```
 
 ## Health, Profiles, and Capacity
@@ -47,7 +48,7 @@ curl -fsS --get "$POLYGLOT_SERVICE_BASE_URL/v1/tasks" \
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/runs" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d '{
     "display_name": "smoke-openclaw-a1",
     "tasks": ["A1-01"],
@@ -61,7 +62,7 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/runs" \
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/runs" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d '{
     "display_name": "runtime-override",
     "tasks": ["A1-01"],
@@ -94,7 +95,7 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/jobs/$JOB_ID" "${AUTH[@]}" |
 RUN_DIR="/service-visible/output/run_xxx"
 
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/reviews" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d "{
     \"display_name\": \"review-existing-run\",
     \"run_dir\": \"$RUN_DIR\",
@@ -109,7 +110,7 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/reviews" \
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-and-review" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d '{
     "display_name": "run-review-a1",
     "run": {
@@ -151,7 +152,7 @@ jq -n \
       auth_json: $auth[0]
     }
   }' | curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-and-review" \
-    "${AUTH[@]}" "${JSON[@]}" -H 'Expect:' -d @-
+    "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" -d @-
 ```
 
 ## Submit Core Run, Review, and Archive
@@ -187,7 +188,7 @@ jq -n \
       auth_json: $auth[0]
     }
   }' | curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-review-archive" \
-    "${AUTH[@]}" "${JSON[@]}" -H 'Expect:' -d @-
+    "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" -d @-
 ```
 
 ## Archive an Existing Run
@@ -198,7 +199,7 @@ Prefer `source_job_id` after a service-run job:
 SOURCE_JOB_ID="job_id_from_prior_run"
 
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/archives/eval-vis" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d "{
     \"display_name\": \"archive-from-job\",
     \"source_job_id\": \"$SOURCE_JOB_ID\",
@@ -216,7 +217,7 @@ Use direct `run_dir` only when the service host can read that path:
 RUN_DIR="/service-visible/output/run_xxx"
 
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/archives/eval-vis" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d "{
     \"display_name\": \"archive-existing-run\",
     \"run_dir\": \"$RUN_DIR\",
@@ -236,7 +237,7 @@ Preview deletion first:
 SOURCE_JOB_ID="successful_eval_vis_archive_or_run_review_archive_job_id"
 
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/archives/eval-vis/delete" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d "{
     \"source_job_id\": \"$SOURCE_JOB_ID\",
     \"delete_archive\": true,
@@ -250,7 +251,7 @@ Delete by `source_job_id` after the dry run looks right:
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/archives/eval-vis/delete" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d "{
     \"source_job_id\": \"$SOURCE_JOB_ID\",
     \"delete_archive\": true,
@@ -267,7 +268,7 @@ ARCHIVE_DIR="/service-visible/_local/L1-3/polyglot-0.4.0/openclaw/core-eval/prox
 PREPARED_DATA_DIR="/service-visible/_local/eval_vis/data/core/polyglot-0.4.0__openclaw__core-eval/proxy_a_gpt-5.4__run_xxx"
 
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/archives/eval-vis/delete" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d "{
     \"archive_dir\": \"$ARCHIVE_DIR\",
     \"prepared_data_dir\": \"$PREPARED_DATA_DIR\",
@@ -366,7 +367,7 @@ curl -fsS --get "$POLYGLOT_SERVICE_BASE_URL/v1/jobs" \
   --data-urlencode "limit=500" |
   jq '{job_ids: [.jobs[].job_id], ignore_terminal: true}' |
   curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/jobs/cancel/batch" \
-    "${AUTH[@]}" "${JSON[@]}" -d @-
+    "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" -d @-
 ```
 
 Cancel selected currently active jobs:
@@ -380,7 +381,7 @@ curl -fsS --get "$POLYGLOT_SERVICE_BASE_URL/v1/jobs" \
   --data-urlencode "limit=500" |
   jq '{job_ids: [.jobs[].job_id], ignore_terminal: true}' |
   curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/jobs/cancel/batch" \
-    "${AUTH[@]}" "${JSON[@]}" -d @-
+    "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" -d @-
 ```
 
 Batch cancel returns per-job results. Terminal jobs can be ignored when `ignore_terminal` is `true`; missing jobs are reported per item.
@@ -392,7 +393,7 @@ Use `/v1/runs/batch` for independent run jobs:
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/runs/batch" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d '{
     "batch_name": "a1-three-harnesses",
     "items": [
@@ -407,7 +408,7 @@ Use `/v1/run-and-review/batch` for independent run-and-review jobs:
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-and-review/batch" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d '{
     "batch_name": "a1-run-review-batch",
     "items": [
@@ -433,7 +434,7 @@ Non-Codex reviewer example:
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-review-archive/batch" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d '{
     "batch_name": "frontier-openclaw-review-archive",
     "items": [
@@ -551,7 +552,7 @@ jq -n \
       }
     ]
   }' | curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-review-archive/batch" \
-    "${AUTH[@]}" "${JSON[@]}" -H 'Expect:' -d @-
+    "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" -d @-
 ```
 
 ## Rerun and Merge
@@ -562,7 +563,7 @@ Dry-run eligibility:
 BASE_RUN_DIR="/service-visible/output/run_xxx"
 
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/rerun-merge" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d "{
     \"display_name\": \"rerun-plan\",
     \"base_run_dir\": \"$BASE_RUN_DIR\",
@@ -576,7 +577,7 @@ Submit explicit rerun merge:
 
 ```bash
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/rerun-merge" \
-  "${AUTH[@]}" "${JSON[@]}" \
+  "${AUTH[@]}" "${JSON[@]}" "${NO_EXPECT[@]}" \
   -d "{
     \"display_name\": \"rerun-merge-selected\",
     \"base_run_dir\": \"$BASE_RUN_DIR\",
