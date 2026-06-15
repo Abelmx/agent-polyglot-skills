@@ -119,7 +119,7 @@ L4 tasks can include one to three of these high-difficulty categories:
 
 L4 tasks often use `contract_schema: 3` with `interaction.mode` values such as `scripted-multiturn` or `scripted-multisession`, and may declare SDK delegation requirements such as `required_tracks`, `min_subagents`, or `require_native_subagent`.
 
-L4 is best reserved for pro/frontier model families, for example GPT-5.5-class or Claude Opus 4.8-class models. It is not the cheapest smoke-test path; use it when the question is whether a model can handle long-horizon, cross-session, multi-agent, policy-aware work. Submit the exact service model string from `/v1/profiles`, such as `openai/gpt5.5` or a configured proxy-qualified Opus model when available.
+L4 is best reserved for pro/frontier model families, for example GPT-5.5-class or Claude Opus 4.8-class models. It is not the cheapest smoke-test path; use it when the question is whether a model can handle long-horizon, cross-session, multi-agent, policy-aware work. Submit configured provider models exactly as listed by `/v1/profiles`, or use the documented built-in `openai/gpt5.5` Codex-auth route when the run path supports it.
 
 ## Choosing a Run Shape
 
@@ -132,4 +132,4 @@ Use this default decision path:
 5. Use L4/frontier for pro-class models and capability investigations.
 6. Keep model names in `provider/model_id` form and prefer live `/v1/profiles` over bundled snapshots.
 
-For OpenAI official proxy routes such as `openai/gpt5.5`, Codex harness runs, or Codex review, pass request-scoped `codex_auth` when using personal quota. The service does not persist that auth after the run/review.
+For OpenAI official proxy routes such as `openai/gpt5.5`, Codex harness runs, OpenClaw runs through the built-in OpenAI/Codex route, or Codex review, pass request-scoped `codex_auth` when using personal quota. The service does not persist that auth after the run/review.

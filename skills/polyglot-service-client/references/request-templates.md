@@ -488,17 +488,46 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/run-review-archive/batch" \
   }'
 ```
 
-Official OpenAI/Codex quota batch example. Put `codex_auth` at the top level of each item:
+Official OpenAI/Codex quota batch example. Put `codex_auth` at the top level of each item. This example uses the built-in `openai/gpt5.5` route, which can be valid even when live `/v1/profiles` does not list provider `openai`.
+
+`codex` is supported through run-scoped Codex auth. `openclaw` is supported when the service runner has the local Codex wrapper route. Do not assume `claude_code` works through this route unless `/v1/profiles` shows an explicit compatible provider/proxy.
 
 ```bash
 jq -n \
   --slurpfile auth "$HOME/.codex/auth.json" \
   '{
-    batch_name: "frontier-codex-review-archive",
+    batch_name: "frontier-openai-gpt55-codex-auth",
     items: [
       {
-        display_name: "a4-04-codex-official",
-        idempotency_key: "rrar-a4-04-codex-official",
+        display_name: "a4-04-openai-gpt55-openclaw",
+        idempotency_key: "rrar-a4-04-openai-gpt55-openclaw",
+        run: {
+          tasks: ["A4-04"],
+          model: "openai/gpt5.5",
+          harness: "openclaw",
+          parallel: 1
+        },
+        review: {
+          review_model: "openai/gpt5.5",
+          parallel: 1,
+          overwrite: true,
+          summary_scope: "run"
+        },
+        archive: {
+          tier: "frontier",
+          polyglot_version: "polyglot-0.4.0",
+          eval_version: "frontier-openai-gpt55-a4-04",
+          replace_existing: false,
+          prepare: true
+        },
+        codex_auth: {
+          mode: "inline_json",
+          auth_json: $auth[0]
+        }
+      },
+      {
+        display_name: "a4-04-openai-gpt55-codex",
+        idempotency_key: "rrar-a4-04-openai-gpt55-codex",
         run: {
           tasks: ["A4-04"],
           model: "openai/gpt5.5",
@@ -514,35 +543,8 @@ jq -n \
         archive: {
           tier: "frontier",
           polyglot_version: "polyglot-0.4.0",
-          eval_version: "frontier-codex-official-a4-04",
-          replace_existing: true,
-          prepare: true
-        },
-        codex_auth: {
-          mode: "inline_json",
-          auth_json: $auth[0]
-        }
-      },
-      {
-        display_name: "a4-04-openclaw-official-review",
-        idempotency_key: "rrar-a4-04-openclaw-official-review",
-        run: {
-          tasks: ["A4-04"],
-          model: "proxy_a/gpt-5.4",
-          harness: "openclaw",
-          parallel: 1
-        },
-        review: {
-          review_model: "openai/gpt5.5",
-          parallel: 1,
-          overwrite: true,
-          summary_scope: "run"
-        },
-        archive: {
-          tier: "frontier",
-          polyglot_version: "polyglot-0.4.0",
-          eval_version: "frontier-openclaw-official-review-a4-04",
-          replace_existing: true,
+          eval_version: "frontier-openai-gpt55-a4-04",
+          replace_existing: false,
           prepare: true
         },
         codex_auth: {

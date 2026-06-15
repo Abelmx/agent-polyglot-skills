@@ -33,20 +33,22 @@ curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/profiles" "${AUTH[@]}"
 curl -fsS "$POLYGLOT_SERVICE_BASE_URL/v1/profiles/default" "${AUTH[@]}"
 ```
 
-5. Use live `/v1/profiles` as authoritative. The bundled `references/polyglot.yaml` is only a static snapshot for offline orientation.
-6. Write model names as `provider/model_id`, for example `proxy_a/gpt-5.4`, `intern-regression-internal/s2_preview_20260421b`, or `openai/gpt5.5`.
-7. Call `/v1/jobs` before large batches, after a dropped connection or empty reply before retrying, when cleaning up L4 full-run smoke tests, and when checking whether a batch still has active children. Compare `available_slots`, `queue_depth`, and intended job count.
-8. Submit jobs with the templates in `references/request-templates.md`, then poll `/v1/jobs/{job_id}` and `/v1/jobs/{job_id}/events`.
-9. Use `/v1/jobs/cancel/batch` for batch cleanup, and run `/v1/archives/eval-vis/delete` with `dry_run: true` before deleting archived or prepared eval_vis data.
-10. When explaining task IDs, task sets, difficulty levels, benchmark intent, or why a harness must be selected, read `references/pipeline-and-benchmark.md` first.
+5. Use live `/v1/profiles` as authoritative for configured providers. The bundled `references/polyglot.yaml` is only a static snapshot for offline orientation.
+6. Treat `openai/gpt5.5` as a special built-in OpenAI/Codex route: it can be valid even when `/v1/profiles` does not list provider `openai`, but only with request-scoped `codex_auth` and only for supported harness paths. Read `references/codex-auth.md` and `references/proxy-and-profiles.md` before using it.
+7. Write ordinary model names as `provider/model_id`, for example `proxy_a/gpt-5.4` or `intern-regression-internal/s2_preview_20260421b`.
+8. Call `/v1/jobs` before large batches, after a dropped connection or empty reply before retrying, when cleaning up L4 full-run smoke tests, and when checking whether a batch still has active children. Compare `available_slots`, `queue_depth`, and intended job count.
+9. Submit jobs with the templates in `references/request-templates.md`, then poll `/v1/jobs/{job_id}` and `/v1/jobs/{job_id}/events`.
+10. Use `/v1/jobs/cancel/batch` for batch cleanup, and run `/v1/archives/eval-vis/delete` with `dry_run: true` before deleting archived or prepared eval_vis data.
+11. When explaining task IDs, task sets, difficulty levels, benchmark intent, or why a harness must be selected, read `references/pipeline-and-benchmark.md` first.
 
 ## Safety Rules
 
 - Never print, log, echo, commit, or include in final answers: `POLYGLOT_SERVICE_API_KEY`, provider API keys, `~/.codex/auth.json`, bearer tokens, or raw `codex_auth` payloads.
 - Do not use `curl -v`, `set -x`, or shell commands that would display headers or auth-bearing payloads.
 - Caller-supplied config overlays must use `${ENV_VAR}` references for sensitive values, or rely on server-side profiles. Do not place raw provider secrets in request JSON.
-- Existing proxies and profiles are server-side configuration. New proxies, provider API keys, or service profiles must be configured by the service provider `@毛鑫`; normal API requests do not create them.
-- For `openai/gpt5.5`, Codex harness runs, or Codex review using user quota, ask the user to run `codex login` locally and pass request-scoped `codex_auth` with the `jq --slurpfile auth "$HOME/.codex/auth.json"` pattern from `references/codex-auth.md`.
+- Existing proxies and profiles are server-side configuration. New durable proxies, provider API keys, or service profiles must be configured by the service provider `@毛鑫`; normal API requests do not create them.
+- Uploading request-scoped `codex_auth` can enable the built-in `openai/gpt5.5` Codex route for that job, but it does not create or persist an `openai` provider in the service profile.
+- For `openai/gpt5.5`, Codex harness runs, OpenClaw runs through the built-in OpenAI/Codex route, or Codex review using user quota, ask the user to run `codex login` locally and pass request-scoped `codex_auth` with the `jq --slurpfile auth "$HOME/.codex/auth.json"` pattern from `references/codex-auth.md`.
 
 ## Minimal Run
 

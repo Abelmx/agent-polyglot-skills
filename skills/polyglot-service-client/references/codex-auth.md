@@ -3,11 +3,15 @@
 Use `codex_auth` when a request should run against the user's Codex/OpenAI official quota, especially for:
 
 - `openai/gpt5.5`
+- `openai/gpt5.5-<reasoning_effort>`
 - `harness: "codex"`
+- `harness: "openclaw"` when using the built-in `openai/gpt5.5` route
 - Codex review using `review_model: "openai/gpt5.5"`
 - combined `run-and-review` or `run-review-archive` jobs that include either of the above
 
 If a job does not use the official OpenAI proxy or Codex review, it usually does not need `codex_auth`.
+
+`openai/gpt5.5` can be valid even when live `/v1/profiles` does not list provider `openai`. In that case, the service runner may use a built-in OpenAI/Codex route backed by the uploaded Codex auth for the current job. This upload is request-scoped only; it does not create a durable `openai` provider and should not be treated as service-side fallback quota.
 
 ## User Prerequisite
 
@@ -83,6 +87,16 @@ jq -n \
 
 Do not duplicate `codex_auth` in nested `run` and `review` objects unless there is a service-specific reason. For batch combined requests, place `codex_auth` at the top level of each item that needs user quota.
 
+## Built-In OpenAI/Codex Route
+
+Use this route when the intended tested model is official OpenAI GPT-5.5 through local Codex auth:
+
+- model strings: `openai/gpt5.5` or `openai/gpt5.5-<reasoning_effort>`
+- supported harness paths: `codex`, and `openclaw` when the runner has the local Codex wrapper route
+- unsupported by default: `claude_code`, unless live `/v1/profiles` shows an explicit provider/proxy that supports it
+
+For `run-review-archive` batches, put `codex_auth` at the top level of every item whose run or review uses `openai/gpt5.5`.
+
 ## Supported Modes
 
 - `inline_json`: preferred for local clients using `jq --slurpfile`; sends an object as `auth_json`.
@@ -98,6 +112,7 @@ The service materializes request-scoped auth only for the job:
 - child processes receive the path through `POLYGLOT_CODEX_AUTH_JSON_PATH`
 - cleanup removes the raw auth file after completion, cancellation, or stale-job recovery
 - DB snapshots, job events, and eval_vis archives should not contain raw auth
+- no provider key or durable profile entry is created from the uploaded auth
 
 The service may have `@毛鑫`'s Codex auth configured as a fallback, but do not treat that as the default quota source for user official-proxy or Codex-review evaluations. Prefer user-provided request-scoped auth when quota ownership matters.
 
